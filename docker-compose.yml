@@ -1,0 +1,40 @@
+version: '3.7'
+networks:
+  app-tier:
+    driver: bridge
+services:
+  wordpress-nginx:
+    build:
+      context: .
+    depends_on:
+      - phpfpm
+      - mysql
+    ports:
+      - 80:8000
+    networks:
+      - app-tier
+    volumes:
+      - ./wordpress-nginx.conf:/bitnami/nginx/conf/vhosts/wordpress-nginx.conf
+      - ./src:/app/wordpress/web/app/themes
+      - app_data:/app/wordpress
+  phpfpm:
+    image: 'bitnami/php-fpm:latest'
+    networks:
+      - app-tier
+    volumes:
+      - app_data:/app/wordpress
+  mysql:
+    image: 'mysql:5.7'
+    restart: always
+    networks:
+      - app-tier
+    volumes:
+       - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+volumes:
+  app_data:
+  db_data:
